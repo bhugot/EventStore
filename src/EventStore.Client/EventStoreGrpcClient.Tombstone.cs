@@ -1,13 +1,14 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Client.Streams;
-using Google.Protobuf;
 
 namespace EventStore.Client {
 	public partial class EventStoreClient {
-		public Task<DeleteResult> TombstoneAsync(
+		private Task<DeleteResult> TombstoneAsync(
 			string streamName,
 			StreamRevision expectedRevision,
+			EventStoreClientOperationOptions operationOptions,
 			UserCredentials userCredentials = default,
 			CancellationToken cancellationToken = default) =>
 			TombstoneInternal(new TombstoneReq {
@@ -15,20 +16,58 @@ namespace EventStore.Client {
 					StreamName = streamName,
 					Revision = expectedRevision
 				}
-			}, userCredentials, cancellationToken);
+			}, operationOptions, userCredentials, cancellationToken);
 
 		public Task<DeleteResult> TombstoneAsync(
 			string streamName,
+			StreamRevision expectedRevision,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) => TombstoneAsync(streamName, expectedRevision,
+			_settings.OperationOptions, userCredentials, cancellationToken);
+
+		public Task<DeleteResult> TombstoneAsync(
+			string streamName,
+			StreamRevision expectedRevision,
+			Action<EventStoreClientOperationOptions> tombstoneOptions,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) {
+			var options = _settings.OperationOptions.Clone();
+			tombstoneOptions(options);
+			return TombstoneAsync(streamName, expectedRevision, options, userCredentials, cancellationToken);
+		}
+
+		private Task<DeleteResult> TombstoneAsync(
+			string streamName,
 			AnyStreamRevision expectedRevision,
+			EventStoreClientOperationOptions operationOptions,
 			UserCredentials userCredentials = default,
 			CancellationToken cancellationToken = default) =>
 			TombstoneInternal(new TombstoneReq {
 				Options = new TombstoneReq.Types.Options {
 					StreamName = streamName
 				}
-			}.WithAnyStreamRevision(expectedRevision), userCredentials, cancellationToken);
+			}.WithAnyStreamRevision(expectedRevision), operationOptions, userCredentials, cancellationToken);
 
-		private async Task<DeleteResult> TombstoneInternal(TombstoneReq request, UserCredentials userCredentials,
+		public Task<DeleteResult> TombstoneAsync(
+			string streamName,
+			AnyStreamRevision expectedRevision,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) => TombstoneAsync(streamName, expectedRevision,
+			_settings.OperationOptions, userCredentials, cancellationToken);
+
+		public Task<DeleteResult> TombstoneAsync(
+			string streamName,
+			AnyStreamRevision expectedRevision,
+			Action<EventStoreClientOperationOptions> operationOptions,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) {
+			var options = _settings.OperationOptions.Clone();
+			operationOptions(options);
+			return TombstoneAsync(streamName, expectedRevision, options, userCredentials, cancellationToken);
+		}
+
+		private async Task<DeleteResult> TombstoneInternal(TombstoneReq request,
+			EventStoreClientOperationOptions options, UserCredentials userCredentials,
 			CancellationToken cancellationToken) {
 			var result = await _client.TombstoneAsync(request, RequestMetadata.Create(userCredentials),
 				cancellationToken: cancellationToken);

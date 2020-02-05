@@ -30,8 +30,10 @@ namespace EventStore.Client {
 					Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions(),
 					Filter = GetFilterOptions(filter)
 				}
-			}, userCredentials,
-			cancellationToken), eventAppeared, subscriptionDropped);
+			}, new EventStoreClientOperationOptions {
+				TimeoutAfter = null,
+			}, userCredentials, cancellationToken), eventAppeared,
+			subscriptionDropped);
 
 		/// <summary>
 		/// Subscribes to all events from a checkpoint. This is exclusive of.
@@ -58,8 +60,10 @@ namespace EventStore.Client {
 					Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions(),
 					Filter = GetFilterOptions(filter)
 				}
-			}, userCredentials,
-			cancellationToken), eventAppeared, subscriptionDropped);
+			}, new EventStoreClientOperationOptions {
+				TimeoutAfter = null,
+			}, userCredentials, cancellationToken), eventAppeared,
+			subscriptionDropped);
 
 		public StreamSubscription SubscribeToStream(string streamName,
 			Func<StreamSubscription, ResolvedEvent, CancellationToken, Task> eventAppeared,
@@ -75,9 +79,10 @@ namespace EventStore.Client {
 						StreamRevision.Start),
 					Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions()
 				}
-			},
-			userCredentials,
-			cancellationToken), eventAppeared, subscriptionDropped);
+			}, new EventStoreClientOperationOptions {
+				TimeoutAfter = null,
+			}, userCredentials, cancellationToken), eventAppeared,
+			subscriptionDropped);
 
 		public StreamSubscription SubscribeToStream(string streamName,
 			StreamRevision start,
@@ -93,7 +98,9 @@ namespace EventStore.Client {
 					Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions()
 				}
 			},
-			userCredentials,
-			cancellationToken), eventAppeared, subscriptionDropped);
+			new EventStoreClientOperationOptions {
+				TimeoutAfter = null,
+			},userCredentials, cancellationToken), eventAppeared,
+			subscriptionDropped);
 	}
 }

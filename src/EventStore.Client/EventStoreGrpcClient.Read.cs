@@ -21,10 +21,11 @@ namespace EventStore.Client {
 		/// <param name="userCredentials">The optional user credentials to perform operation with.</param>
 		/// <param name="cancellationToken">The optional <see cref="System.Threading.CancellationToken"/>.</param>
 		/// <returns></returns>
-		public IAsyncEnumerable<ResolvedEvent> ReadAllAsync(
+		private IAsyncEnumerable<ResolvedEvent> ReadAllAsync(
 			Direction direction,
 			Position position,
 			ulong maxCount,
+			EventStoreClientOperationOptions operationOptions,
 			bool resolveLinkTos = false,
 			IEventFilter filter = null,
 			UserCredentials userCredentials = default,
@@ -41,14 +42,43 @@ namespace EventStore.Client {
 					Filter = GetFilterOptions(filter)
 				}
 			},
+			operationOptions,
 			userCredentials,
 			cancellationToken);
+		
+		public IAsyncEnumerable<ResolvedEvent> ReadAllAsync(
+			Direction direction,
+			Position position,
+			ulong maxCount,
+			bool resolveLinkTos = false,
+			IEventFilter filter = null,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) => ReadAllAsync(direction, position, maxCount,
+			_settings.OperationOptions, resolveLinkTos, filter, userCredentials, cancellationToken);
 
-		public IAsyncEnumerable<ResolvedEvent> ReadStreamAsync(
+		public IAsyncEnumerable<ResolvedEvent> ReadAllAsync(
+			Direction direction,
+			Position position,
+			ulong maxCount,
+			Action<EventStoreClientOperationOptions> configureOperationOptions,
+			bool resolveLinkTos = false,
+			IEventFilter filter = null,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) {
+
+			var options = _settings.OperationOptions.Clone();
+			configureOperationOptions(options);
+			
+			return ReadAllAsync(direction, position, maxCount, options, resolveLinkTos, filter, userCredentials,
+				cancellationToken);
+		}
+
+		private IAsyncEnumerable<ResolvedEvent> ReadStreamAsync(
 			Direction direction,
 			string streamName,
 			StreamRevision revision,
 			ulong count,
+			EventStoreClientOperationOptions operationOptions,
 			bool resolveLinkTos = false,
 			UserCredentials userCredentials = default,
 			CancellationToken cancellationToken = default) => ReadInternal(new ReadReq {
@@ -63,11 +93,41 @@ namespace EventStore.Client {
 					Count = count
 				}
 			},
+			operationOptions,
 			userCredentials,
 			cancellationToken);
+			
+		
+		public IAsyncEnumerable<ResolvedEvent> ReadStreamAsync(
+			Direction direction,
+			string streamName,
+			StreamRevision revision,
+			ulong count,
+			bool resolveLinkTos = false,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) => ReadStreamAsync(direction, streamName, revision, count,
+			_settings.OperationOptions, resolveLinkTos, userCredentials, cancellationToken);
+
+		public IAsyncEnumerable<ResolvedEvent> ReadStreamAsync(
+			Direction direction,
+			string streamName,
+			StreamRevision revision,
+			ulong count,
+			Action<EventStoreClientOperationOptions> configureOperationOptions,
+			bool resolveLinkTos = false,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) {
+
+			var options = _settings.OperationOptions.Clone();
+			configureOperationOptions(options);
+			
+			return ReadStreamAsync(direction, streamName, revision, count, options, resolveLinkTos, userCredentials,
+				cancellationToken);
+		}
 
 		private async IAsyncEnumerable<ResolvedEvent> ReadInternal(
 			ReadReq request,
+			EventStoreClientOperationOptions operationOptions,
 			UserCredentials userCredentials,
 			[EnumeratorCancellation] CancellationToken cancellationToken) {
 			if (request.Options.CountOptionCase == ReadReq.Types.Options.CountOptionOneofCase.Count &&

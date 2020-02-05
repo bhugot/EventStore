@@ -2,13 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Client.Streams;
-using Google.Protobuf;
 
 namespace EventStore.Client {
 	public partial class EventStoreClient {
-		public Task<DeleteResult> SoftDeleteAsync(
+		private Task<DeleteResult> SoftDeleteAsync(
 			string streamName,
 			StreamRevision expectedRevision,
+			EventStoreClientOperationOptions operationOptions,
 			UserCredentials userCredentials = default,
 			CancellationToken cancellationToken = default) =>
 			DeleteInternal(new DeleteReq {
@@ -16,20 +16,58 @@ namespace EventStore.Client {
 					StreamName = streamName,
 					Revision = expectedRevision
 				}
-			}, userCredentials, cancellationToken);
+			}, operationOptions, userCredentials, cancellationToken);
 
 		public Task<DeleteResult> SoftDeleteAsync(
 			string streamName,
+			StreamRevision expectedRevision,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) => SoftDeleteAsync(streamName, expectedRevision,
+			_settings.OperationOptions, userCredentials, cancellationToken);
+
+		public Task<DeleteResult> SoftDeleteAsync(
+			string streamName,
+			StreamRevision expectedRevision,
+			Action<EventStoreClientOperationOptions> configureOperationOptions,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) {
+			var options = _settings.OperationOptions.Clone();
+			configureOperationOptions(options);
+			return SoftDeleteAsync(streamName, expectedRevision, options, userCredentials, cancellationToken);
+		}
+
+		private Task<DeleteResult> SoftDeleteAsync(
+			string streamName,
 			AnyStreamRevision expectedRevision,
+			EventStoreClientOperationOptions operationOptions,
 			UserCredentials userCredentials = default,
 			CancellationToken cancellationToken = default) =>
 			DeleteInternal(new DeleteReq {
 				Options = new DeleteReq.Types.Options {
 					StreamName = streamName
 				}
-			}.WithAnyStreamRevision(expectedRevision), userCredentials, cancellationToken);
+			}.WithAnyStreamRevision(expectedRevision), operationOptions, userCredentials, cancellationToken);
+		
+		public Task<DeleteResult> SoftDeleteAsync(
+			string streamName,
+			AnyStreamRevision expectedRevision,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) => SoftDeleteAsync(streamName, expectedRevision,
+			_settings.OperationOptions, userCredentials, cancellationToken);
 
-		private async Task<DeleteResult> DeleteInternal(DeleteReq request, UserCredentials userCredentials,
+		public Task<DeleteResult> SoftDeleteAsync(
+			string streamName,
+			AnyStreamRevision expectedRevision,
+			Action<EventStoreClientOperationOptions> configureOperationOptions,
+			UserCredentials userCredentials = default,
+			CancellationToken cancellationToken = default) {
+			var options = _settings.OperationOptions.Clone();
+			configureOperationOptions(options);
+			return SoftDeleteAsync(streamName, expectedRevision, options, userCredentials, cancellationToken);
+		}
+
+		private async Task<DeleteResult> DeleteInternal(DeleteReq request, EventStoreClientOperationOptions appendOptions,
+			UserCredentials userCredentials,
 			CancellationToken cancellationToken) {
 			var result = await _client.DeleteAsync(request, RequestMetadata.Create(userCredentials),
 				cancellationToken: cancellationToken);
