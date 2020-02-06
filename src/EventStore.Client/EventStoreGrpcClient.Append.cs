@@ -43,7 +43,7 @@ namespace EventStore.Client {
 				cancellationToken);
 		}
 
-		public Task<WriteResult> AppendToStreamAsync(
+		private Task<WriteResult> AppendToStreamAsync(
 			string streamName,
 			AnyStreamRevision expectedRevision,
 			IEnumerable<EventData> eventData,
@@ -85,7 +85,7 @@ namespace EventStore.Client {
 			UserCredentials userCredentials,
 			CancellationToken cancellationToken) {
 			using var call = _client.Append(RequestMetadata.Create(userCredentials),
-				cancellationToken: cancellationToken);
+				deadline: DeadLine.After(operationOptions.TimeoutAfter), cancellationToken: cancellationToken);
 
 			await call.RequestStream.WriteAsync(header).ConfigureAwait(false);
 

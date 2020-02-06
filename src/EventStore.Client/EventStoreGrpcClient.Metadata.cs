@@ -95,12 +95,12 @@ namespace EventStore.Client {
 
 		private Task<WriteResult> SetStreamMetadataInternal(StreamMetadata metadata,
 			AppendReq appendReq,
-			EventStoreClientOperationOptions appendOptions,
+			EventStoreClientOperationOptions operationOptions,
 			UserCredentials userCredentials,
 			CancellationToken cancellationToken) =>
 			AppendToStreamInternal(appendReq, new[] {
 				new EventData(Uuid.NewUuid(), SystemEventTypes.StreamMetadata,
 					JsonSerializer.SerializeToUtf8Bytes(metadata, StreamMetadataJsonSerializerOptions)),
-			}, appendOptions, userCredentials, cancellationToken);
+			}, operationOptions, userCredentials, cancellationToken);
 	}
 }

@@ -67,10 +67,10 @@ namespace EventStore.Client {
 		}
 
 		private async Task<DeleteResult> TombstoneInternal(TombstoneReq request,
-			EventStoreClientOperationOptions options, UserCredentials userCredentials,
+			EventStoreClientOperationOptions operationOptions, UserCredentials userCredentials,
 			CancellationToken cancellationToken) {
 			var result = await _client.TombstoneAsync(request, RequestMetadata.Create(userCredentials),
-				cancellationToken: cancellationToken);
+				deadline: DeadLine.After(operationOptions.TimeoutAfter), cancellationToken);
 
 			return new DeleteResult(new Position(result.Position.CommitPosition, result.Position.PreparePosition));
 		}

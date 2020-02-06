@@ -66,11 +66,11 @@ namespace EventStore.Client {
 			return SoftDeleteAsync(streamName, expectedRevision, options, userCredentials, cancellationToken);
 		}
 
-		private async Task<DeleteResult> DeleteInternal(DeleteReq request, EventStoreClientOperationOptions appendOptions,
+		private async Task<DeleteResult> DeleteInternal(DeleteReq request, EventStoreClientOperationOptions operationOptions,
 			UserCredentials userCredentials,
 			CancellationToken cancellationToken) {
 			var result = await _client.DeleteAsync(request, RequestMetadata.Create(userCredentials),
-				cancellationToken: cancellationToken);
+				deadline: DeadLine.After(operationOptions.TimeoutAfter), cancellationToken);
 
 			return new DeleteResult(new Position(result.Position.CommitPosition, result.Position.PreparePosition));
 		}

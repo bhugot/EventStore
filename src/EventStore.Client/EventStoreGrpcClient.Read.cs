@@ -144,7 +144,7 @@ namespace EventStore.Client {
 
 			using var call = _client.Read(
 				request, RequestMetadata.Create(userCredentials),
-				cancellationToken: cancellationToken);
+				deadline: DeadLine.After(operationOptions.TimeoutAfter), cancellationToken);
 
 			await foreach (var e in call.ResponseStream
 				.ReadAllAsync(cancellationToken)
