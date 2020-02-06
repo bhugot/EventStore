@@ -7,10 +7,9 @@ namespace EventStore.Client {
 			TimeoutAfter = TimeSpan.FromSeconds(5),
 		};
 
-		public EventStoreClientOperationOptions Clone() {
-			return new EventStoreClientOperationOptions {
+		public EventStoreClientOperationOptions Clone() =>
+			new EventStoreClientOperationOptions {
 				TimeoutAfter = TimeoutAfter,
 			};
-		}
 	}
 }

@@ -22,18 +22,21 @@ namespace EventStore.Client {
 			Action<StreamSubscription, SubscriptionDroppedReason, Exception> subscriptionDropped = default,
 			IEventFilter filter = null,
 			UserCredentials userCredentials = default,
-			CancellationToken cancellationToken = default) => new StreamSubscription(ReadInternal(new ReadReq {
-				Options = new ReadReq.Types.Options {
-					ReadDirection = ReadReq.Types.Options.Types.ReadDirection.Forwards,
-					ResolveLinks = resolveLinkTos,
-					All = ReadReq.Types.Options.Types.AllOptions.FromPosition(Position.Start),
-					Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions(),
-					Filter = GetFilterOptions(filter)
-				}
-			}, new EventStoreClientOperationOptions {
-				TimeoutAfter = null,
-			}, userCredentials, cancellationToken), eventAppeared,
-			subscriptionDropped);
+			CancellationToken cancellationToken = default) {
+			var settings = _settings.OperationOptions.Clone();
+			settings.TimeoutAfter = DeadLine.None;
+			var subscription = new StreamSubscription(ReadInternal(new ReadReq {
+					Options = new ReadReq.Types.Options {
+						ReadDirection = ReadReq.Types.Options.Types.ReadDirection.Forwards,
+						ResolveLinks = resolveLinkTos,
+						All = ReadReq.Types.Options.Types.AllOptions.FromPosition(Position.Start),
+						Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions(),
+						Filter = GetFilterOptions(filter)
+					}
+				}, settings, userCredentials, cancellationToken), eventAppeared,
+				subscriptionDropped);
+			return subscription;
+		}
 
 		/// <summary>
 		/// Subscribes to all events from a checkpoint. This is exclusive of.
@@ -52,37 +55,43 @@ namespace EventStore.Client {
 			Action<StreamSubscription, SubscriptionDroppedReason, Exception> subscriptionDropped = default,
 			IEventFilter filter = null,
 			UserCredentials userCredentials = default,
-			CancellationToken cancellationToken = default) => new StreamSubscription(ReadInternal(new ReadReq {
-				Options = new ReadReq.Types.Options {
-					ReadDirection = ReadReq.Types.Options.Types.ReadDirection.Forwards,
-					ResolveLinks = resolveLinkTos,
-					All = ReadReq.Types.Options.Types.AllOptions.FromPosition(start),
-					Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions(),
-					Filter = GetFilterOptions(filter)
-				}
-			}, new EventStoreClientOperationOptions {
-				TimeoutAfter = null,
-			}, userCredentials, cancellationToken), eventAppeared,
-			subscriptionDropped);
+			CancellationToken cancellationToken = default) {
+			var settings = _settings.OperationOptions.Clone();
+			settings.TimeoutAfter = DeadLine.None;
+			var subscription = new StreamSubscription(ReadInternal(new ReadReq {
+					Options = new ReadReq.Types.Options {
+						ReadDirection = ReadReq.Types.Options.Types.ReadDirection.Forwards,
+						ResolveLinks = resolveLinkTos,
+						All = ReadReq.Types.Options.Types.AllOptions.FromPosition(start),
+						Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions(),
+						Filter = GetFilterOptions(filter)
+					}
+				}, settings, userCredentials, cancellationToken), eventAppeared,
+				subscriptionDropped);
+			return subscription;
+		}
 
 		public StreamSubscription SubscribeToStream(string streamName,
 			Func<StreamSubscription, ResolvedEvent, CancellationToken, Task> eventAppeared,
 			bool resolveLinkTos = false,
 			Action<StreamSubscription, SubscriptionDroppedReason, Exception> subscriptionDropped = default,
 			UserCredentials userCredentials = default,
-			CancellationToken cancellationToken = default) => new StreamSubscription(ReadInternal(new ReadReq {
-				Options = new ReadReq.Types.Options {
-					ReadDirection = ReadReq.Types.Options.Types.ReadDirection.Forwards,
-					ResolveLinks = resolveLinkTos,
-					Stream = ReadReq.Types.Options.Types.StreamOptions.FromStreamNameAndRevision(
-						streamName,
-						StreamRevision.Start),
-					Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions()
-				}
-			}, new EventStoreClientOperationOptions {
-				TimeoutAfter = null,
-			}, userCredentials, cancellationToken), eventAppeared,
-			subscriptionDropped);
+			CancellationToken cancellationToken = default) {
+			var settings = _settings.OperationOptions.Clone();
+			settings.TimeoutAfter = DeadLine.None;
+			var subscription = new StreamSubscription(ReadInternal(new ReadReq {
+					Options = new ReadReq.Types.Options {
+						ReadDirection = ReadReq.Types.Options.Types.ReadDirection.Forwards,
+						ResolveLinks = resolveLinkTos,
+						Stream = ReadReq.Types.Options.Types.StreamOptions.FromStreamNameAndRevision(
+							streamName,
+							StreamRevision.Start),
+						Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions()
+					}
+				}, settings, userCredentials, cancellationToken), eventAppeared,
+				subscriptionDropped);
+			return subscription;
+		}
 
 		public StreamSubscription SubscribeToStream(string streamName,
 			StreamRevision start,
@@ -90,17 +99,21 @@ namespace EventStore.Client {
 			bool resolveLinkTos = false,
 			Action<StreamSubscription, SubscriptionDroppedReason, Exception> subscriptionDropped = default,
 			UserCredentials userCredentials = default,
-			CancellationToken cancellationToken = default) => new StreamSubscription(ReadInternal(new ReadReq {
-				Options = new ReadReq.Types.Options {
-					ReadDirection = ReadReq.Types.Options.Types.ReadDirection.Forwards,
-					ResolveLinks = resolveLinkTos,
-					Stream = ReadReq.Types.Options.Types.StreamOptions.FromStreamNameAndRevision(streamName, start),
-					Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions()
-				}
-			},
-			new EventStoreClientOperationOptions {
-				TimeoutAfter = null,
-			},userCredentials, cancellationToken), eventAppeared,
-			subscriptionDropped);
+			CancellationToken cancellationToken = default) {
+			var settings = _settings.OperationOptions.Clone();
+			settings.TimeoutAfter = DeadLine.None;
+			var subscription = new StreamSubscription(ReadInternal(new ReadReq {
+						Options = new ReadReq.Types.Options {
+							ReadDirection = ReadReq.Types.Options.Types.ReadDirection.Forwards,
+							ResolveLinks = resolveLinkTos,
+							Stream = ReadReq.Types.Options.Types.StreamOptions.FromStreamNameAndRevision(streamName,
+								start),
+							Subscription = new ReadReq.Types.Options.Types.SubscriptionOptions()
+						}
+					},
+					settings, userCredentials, cancellationToken), eventAppeared,
+				subscriptionDropped);
+			return subscription;
+		}
 	}
 }
